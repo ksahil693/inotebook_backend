@@ -19,6 +19,7 @@ router.post(
     }),
   ],
   async (req, res) => {
+    let success=false;
     // If their are errors, return bad request and that error
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -31,7 +32,7 @@ router.post(
       if (user) {
         return res
           .status(400)
-          .json({ error: "Sorry a user with this email already exists" });
+          .json({success, error: "Sorry a user with this email already exists" });
       }
 
       //Securing Password by hashing and salt using bcrypt
@@ -53,8 +54,9 @@ router.post(
         },
       };
 
-      const authToken = await jwt.sign(data, JWT_SECRET);
-      res.json({ authToken });
+      const authToken = jwt.sign(data, JWT_SECRET);
+      success=true;
+      res.json({ success, authToken });
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Internal Server Error");
@@ -71,6 +73,7 @@ router.post(
     body("password", "Password Cannot be blank").exists(),
   ],
   async (req, res) => {
+    let success=false;
     // If their are errors, return bad request and that error
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -91,6 +94,7 @@ router.post(
       // comparing password entered by user with password at dataBase
       const passwordCompare = await bcrypt.compare(password, user.password);
       if (!passwordCompare) {
+        
         return res
           .status(400)
           .json({ errors: "Please try to login with correct Credentials" });
@@ -102,8 +106,9 @@ router.post(
           id: user.id,
         },
       };
-      const authToken = await jwt.sign(data, JWT_SECRET);
-      res.json({ authToken });
+      const authToken = jwt.sign(data, JWT_SECRET);
+      success=true;
+      res.json({ success, authToken });
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Internal Server Error");
